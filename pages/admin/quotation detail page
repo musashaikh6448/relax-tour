@@ -1,0 +1,4 @@
+import { generateQuotationPdf } from '../../utils/pdf';
+
+const pdfPath = await generateQuotationPdf(quotation);
+window.open(`/${pdfPath}`, '_blank');

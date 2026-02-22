@@ -9,13 +9,12 @@ const DashboardOverview: React.FC = () => {
     registeredUsers: 0,
     activeQuotations: 0,
     revenue: 0,
-    recentQuotations: [], // 👈 default array
+    recentQuotations: [],
   });
 
   useEffect(() => {
     const fetchStats = async () => {
       const res = await apiRequest('/dashboard', 'GET');
-      console.log('DASHBOARD RESPONSE:', res);
 
       setStats({
         totalTours: res.totalTours ?? 0,
@@ -33,7 +32,6 @@ const DashboardOverview: React.FC = () => {
 
   return (
     <div className="space-y-8">
-
       {/* TOP STATS */}
       <div className="grid grid-cols-4 gap-6">
         <Stat title="Total Tours" value={stats.totalTours} icon={Map} />
@@ -48,22 +46,53 @@ const DashboardOverview: React.FC = () => {
 
       {/* LOWER SECTION */}
       <div className="grid grid-cols-2 gap-6">
-
         {/* RECENT QUOTATIONS */}
         <div className="bg-white rounded-3xl p-6">
-          <h3 className="font-bold text-lg mb-4">Recent Quotation Requests</h3>
+       <div className="flex items-center justify-between mb-4">
+  <h3 className="font-bold text-lg">Recent Quotation Requests</h3>
+
+  <Link
+    to="/admin/quotations"
+    className="text-orange-600 text-sm font-semibold hover:underline"
+  >
+    View All
+  </Link>
+</div>
 
           <div className="space-y-4">
-            {Array.isArray(stats.recentQuotations) &&
-              stats.recentQuotations.map((q: any) => (
-                <div
-                  key={q._id}
-                  className="flex justify-between bg-gray-50 p-4 rounded-2xl"
-                >
-                  <p className="font-bold">{q.destination}</p>
-                  <span className="text-sm">{q.status}</span>
+            {stats.recentQuotations.map((q: any) => (
+              <div
+                key={q._id}
+                className="flex items-center justify-between bg-gray-50 p-4 rounded-2xl"
+              >
+                {/* LEFT */}
+                <div className="flex items-center gap-4">
+                  <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-600">
+                    {q.destination?.charAt(0)}
+                  </div>
+
+                  <div>
+                    <p className="font-bold text-sm text-gray-900">
+                      {q.name || 'Guest User'}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Destination: {q.destination}
+                    </p>
+                  </div>
                 </div>
-              ))}
+
+                {/* STATUS */}
+                <span
+                  className={`text-xs px-3 py-1 rounded-full font-semibold ${
+                    q.status === 'Pending'
+                      ? 'bg-orange-100 text-orange-600'
+                      : 'bg-green-100 text-green-600'
+                  }`}
+                >
+                  {q.status}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -71,14 +100,39 @@ const DashboardOverview: React.FC = () => {
         <div className="bg-white rounded-3xl p-6">
           <h3 className="font-bold text-lg mb-4">Popular Tours</h3>
 
-          {Array.isArray(stats.recentQuotations) &&
-            stats.recentQuotations.slice(0, 3).map((q: any) => (
-              <div key={q._id} className="mb-2">
-                {q.destination}
+          <div className="space-y-4">
+            {stats.recentQuotations.slice(0, 3).map((q: any, i: number) => (
+              <div
+                key={i}
+                className="flex items-center justify-between bg-gray-50 p-3 rounded-2xl"
+              >
+                <div className="flex items-center gap-4">
+                  <img
+                    src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=200&q=80"
+                    alt="tour"
+                    className="h-14 w-14 rounded-xl object-cover"
+                  />
+
+                  <div>
+                    <p className="font-bold text-sm text-gray-900">
+                      {q.destination} Package
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      5 Days / 4 Nights · ₹25,000
+                    </p>
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <p className="text-orange-600 font-bold text-sm">84 sales</p>
+                  <p className="text-[10px] text-gray-400 uppercase">
+                    this month
+                  </p>
+                </div>
               </div>
             ))}
+          </div>
         </div>
-
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ import tourRoutes from './routes/tour.routes.js';
 import quotationRoutes from './routes/quotation.routes.js';
 import dashboardRoutes from './routes/dashboard.routes.js';
 import userRoutes from './routes/user.routes.js';
+import path from 'path';
 
 const app = express();
 
@@ -22,5 +23,6 @@ app.use('/api/v1/tours', tourRoutes);
 app.use('/api/v1/quotations', quotationRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
 app.use('/api/v1/users', userRoutes);
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 export default app;

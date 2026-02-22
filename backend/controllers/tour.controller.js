@@ -5,6 +5,14 @@ export const getAllTours = async (req, res) => {
   res.json(tours);
 };
 
+export const getTourById = async (req, res) => {
+  const tour = await Tour.findById(req.params.id);
+  if (!tour) {
+    return res.status(404).json({ message: 'Tour not found' });
+  }
+  res.json(tour);
+};
+
 export const createTour = async (req, res) => {
   const tour = await Tour.create(req.body);
   res.status(201).json(tour);

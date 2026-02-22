@@ -1,32 +1,57 @@
-
 import React, { useEffect, useState } from 'react';
 import TourCard from '../components/TourCard';
 import { Search, ChevronRight } from 'lucide-react';
 import { apiRequest } from '../src/services/api';
+import { useNavigate } from 'react-router-dom';
 
 const HomePage: React.FC = () => {
   const [tours, setTours] = useState<any[]>([]);
+  const [filteredTours, setFilteredTours] = useState<any[]>([]);
+  const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTours = async () => {
       try {
         const res = await apiRequest('/tours', 'GET');
-        if (res.success) {
-          setTours(res.data);
-        }
+        const data = Array.isArray(res) ? res : [];
+        setTours(data);
+        setFilteredTours(data); // 🔥 IMPORTANT
       } catch (error) {
         console.error('Error fetching tours:', error);
+        setTours([]);
+        setFilteredTours([]);
       } finally {
         setLoading(false);
       }
     };
+
     fetchTours();
   }, []);
 
+  /* ================= REAL SEARCH LOGIC ================= */
+  useEffect(() => {
+    if (!search.trim()) {
+      setFilteredTours(tours);
+      return;
+    }
+
+    const q = search.toLowerCase();
+
+    const result = tours.filter(
+      (t) =>
+        t.name?.toLowerCase().includes(q) ||
+        t.location?.toLowerCase().includes(q)
+    );
+
+    setFilteredTours(result);
+  }, [search, tours]);
+
   return (
     <div>
-      {/* Hero Section */}
+      {/* ================= HERO SECTION (UNCHANGED) ================= */}
       <section className="relative h-[85vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img
@@ -43,7 +68,8 @@ const HomePage: React.FC = () => {
               Discover <span className="text-orange-500">New Horizons</span> with Every Journey
             </h1>
             <p className="text-lg md:text-xl text-gray-200 mb-10 leading-relaxed font-light">
-              Experience hand-crafted tours that blend luxury, culture, and adventure. From the peaks of Kashmir to the beaches of Bali.
+              Experience hand-crafted tours that blend luxury, culture, and adventure.
+              From the peaks of Kashmir to the beaches of Bali.
             </p>
 
             <div className="bg-white/10 backdrop-blur-xl p-2 rounded-2xl border border-white/20 shadow-2xl max-w-xl">
@@ -53,6 +79,8 @@ const HomePage: React.FC = () => {
                   <input
                     type="text"
                     placeholder="Where do you want to go?"
+                     value={search}
+                    onChange={(e) => setSearch(e.target.value)}
                     className="w-full text-gray-800 bg-transparent focus:outline-none placeholder-gray-400"
                   />
                 </div>
@@ -65,34 +93,47 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Popular Destinations Grid */}
+      {/* ================= FEATURED DESTINATIONS (UNCHANGED UI) ================= */}
       <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 space-y-4 md:space-y-0">
             <div>
-              <p className="text-orange-600 font-bold tracking-widest uppercase text-sm mb-3">Top Experiences</p>
-              <h2 className="text-4xl font-bold text-gray-900">Featured Destinations</h2>
+              <p className="text-orange-600 font-bold tracking-widest uppercase text-sm mb-3">
+                Top Experiences
+              </p>
+              <h2 className="text-4xl font-bold text-gray-900">
+                Featured Destinations
+              </h2>
             </div>
-            <button className="flex items-center text-orange-600 font-bold hover:text-orange-700 transition-colors group">
-              View All Packages <ChevronRight className="ml-1 group-hover:translate-x-1 transition-transform" />
-            </button>
+
+            <button
+  onClick={() => navigate('/destinations')}
+  className="flex items-center text-orange-600 font-bold hover:text-orange-700 transition-colors group"
+>
+  View All Packages
+  <ChevronRight className="ml-1 group-hover:translate-x-1 transition-transform" />
+</button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {loading ? (
-              <p className="col-span-full text-center py-10">Loading tours...</p>
-            ) : tours.length > 0 ? (
-              tours.map((tour) => (
-                <TourCard key={tour._id} tour={tour} />
-              ))
-            ) : (
-              <p className="col-span-full text-center py-10">No tours available at the moment.</p>
+              <p className="col-span-full text-center py-10">
+                Loading tours...
+              </p>
+            ) : filteredTours.length > 0 ? (
+  filteredTours.map((tour) => (
+    <TourCard key={tour._id} tour={tour} />
+  ))
+) : (
+              <p className="col-span-full text-center py-10">
+                No tours available at the moment.
+              </p>
             )}
           </div>
         </div>
       </section>
 
-      {/* Why Choose Us */}
+      {/* ================= WHY CHOOSE US (UNCHANGED) ================= */}
       <section className="py-24 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
@@ -103,12 +144,12 @@ const HomePage: React.FC = () => {
                 alt="Feature 1"
               />
               <img
-                src="https://images.unsplash.com/photo-1590393533630-06a667793c47?auto=format&fit=crop&q=80&w=600"
+                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7Xhq05mvStJ3UgYDFKW8QXuGMgSLUNPGLNw&s"
                 className="rounded-3xl h-64 w-full object-cover shadow-lg mt-8"
                 alt="Feature 2"
               />
               <img
-                src="https://images.unsplash.com/photo-1524492717547-2249978a68a9?auto=format&fit=crop&q=80&w=600"
+                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDIFcioUddxPR0DAlUSu_-I6chVJzzcAEPVQ&s"
                 className="rounded-3xl h-64 w-full object-cover shadow-lg -mt-8"
                 alt="Feature 3"
               />
@@ -118,24 +159,35 @@ const HomePage: React.FC = () => {
                 alt="Feature 4"
               />
             </div>
+
             <div className="space-y-8">
               <div>
-                <p className="text-orange-600 font-bold uppercase tracking-widest text-sm mb-3">Why relax-tours?</p>
-                <h2 className="text-4xl font-bold text-gray-900 mb-6">Unforgettable Experiences Guaranteed</h2>
+                <p className="text-orange-600 font-bold uppercase tracking-widest text-sm mb-3">
+                  Why relax-tours?
+                </p>
+                <h2 className="text-4xl font-bold text-gray-900 mb-6">
+                  Unforgettable Experiences Guaranteed
+                </h2>
                 <p className="text-gray-600 leading-relaxed text-lg">
-                  We don't just sell tours; we create memories. Our local experts curate every single itinerary to ensure you get the most authentic and premium experience.
+                  We don't just sell tours; we create memories.
+                  Our local experts curate every itinerary for premium experiences.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {[
-                  { title: "Curated Experiences", desc: "Hand-picked hotels and guides." },
-                  { title: "Local Expertise", desc: "Guides with deep cultural roots." },
-                  { title: "24/7 Support", desc: "We are always here for you." },
-                  { title: "Best Price", desc: "Luxury travel within your reach." }
+                  { title: 'Curated Experiences', desc: 'Hand-picked hotels and guides.' },
+                  { title: 'Local Expertise', desc: 'Guides with deep cultural roots.' },
+                  { title: '24/7 Support', desc: 'We are always here for you.' },
+                  { title: 'Best Price', desc: 'Luxury travel within your reach.' },
                 ].map((item, idx) => (
-                  <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <h4 className="font-bold text-gray-900 mb-2">{item.title}</h4>
+                  <div
+                    key={idx}
+                    className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"
+                  >
+                    <h4 className="font-bold text-gray-900 mb-2">
+                      {item.title}
+                    </h4>
                     <p className="text-sm text-gray-500">{item.desc}</p>
                   </div>
                 ))}

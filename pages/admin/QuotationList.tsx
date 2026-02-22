@@ -5,6 +5,7 @@ import {
   MoreVertical,
   Eye,
   Trash2,
+  FileText,
 } from 'lucide-react';
 import { apiRequest } from '../../src/services/api';
 
@@ -13,7 +14,7 @@ const QuotationList: React.FC = () => {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   const fetchQuotations = async () => {
-    const data = await apiRequest('/quotations');
+    const data = await apiRequest('/quotations', 'GET');
     setQuotations(data);
   };
 
@@ -34,9 +35,13 @@ const QuotationList: React.FC = () => {
     fetchQuotations();
   };
 
+  const generatePdf = async (id: string) => {
+    const res = await apiRequest(`/quotations/${id}/pdf`, 'GET');
+    window.open(res.pdfUrl, '_blank');
+  };
+
   return (
     <div className="bg-white rounded-3xl border">
-      {/* ❗ overflow-hidden REMOVED */}
       <table className="w-full text-sm">
         <thead className="bg-gray-50 text-gray-500 uppercase">
           <tr>
@@ -49,25 +54,21 @@ const QuotationList: React.FC = () => {
         </thead>
 
         <tbody>
-          {quotations.map(q => (
+          {quotations.map((q) => (
             <tr key={q._id} className="border-t">
-              {/* ID */}
               <td className="px-6 py-4 font-mono">
                 #{q._id.slice(-5)}
               </td>
 
-              {/* Customer */}
               <td className="px-6 py-4">
                 <p className="font-bold">{q.customerName}</p>
                 <p className="text-xs text-gray-500">{q.travelDate}</p>
               </td>
 
-              {/* Destination */}
               <td className="px-6 py-4 font-medium">
                 {q.destination}
               </td>
 
-              {/* Status */}
               <td className="px-6 py-4">
                 <span
                   className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${
@@ -85,7 +86,6 @@ const QuotationList: React.FC = () => {
                 </span>
               </td>
 
-              {/* Actions */}
               <td className="px-6 py-4 text-right relative">
                 <button
                   onClick={() =>
@@ -96,15 +96,10 @@ const QuotationList: React.FC = () => {
                   <MoreVertical />
                 </button>
 
-                {/* ✅ FIXED DROPDOWN */}
                 {openMenuId === q._id && (
-                  <div
-                    className="
-                      absolute right-0 top-10
-                      bg-white border rounded-xl shadow-xl
-                      w-48 z-[9999]
-                    "
-                  >
+                  <div className="absolute right-0 top-10 bg-white border rounded-xl shadow-xl w-52 z-[9999]">
+                    
+                    {/* VIEW */}
                     <button
                       className="flex items-center gap-2 w-full px-4 py-2 hover:bg-gray-50 text-left"
                       onClick={() =>
@@ -120,6 +115,15 @@ Notes: ${q.notes || '-'}`
                       <Eye size={16} /> View
                     </button>
 
+                    {/* ✅ GENERATE PDF */}
+                    <button
+                      className="flex items-center gap-2 w-full px-4 py-2 hover:bg-gray-50 text-left"
+                      onClick={() => generatePdf(q._id)}
+                    >
+                      <FileText size={16} /> Generate PDF
+                    </button>
+
+                    {/* MARK PROCESSED */}
                     {q.status === 'Pending' && (
                       <button
                         className="flex items-center gap-2 w-full px-4 py-2 hover:bg-gray-50 text-left"
@@ -129,6 +133,7 @@ Notes: ${q.notes || '-'}`
                       </button>
                     )}
 
+                    {/* DELETE */}
                     <button
                       className="flex items-center gap-2 w-full px-4 py-2 text-red-600 hover:bg-red-50 text-left"
                       onClick={() => deleteQuotation(q._id)}
