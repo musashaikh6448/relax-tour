@@ -1,87 +1,103 @@
-
-import React, { useState } from 'react';
-import { users as mockUsers } from '../../data/mockData';
-import { Mail, Shield, Calendar, UserPlus, Trash2, AlertTriangle, X } from 'lucide-react';
-import { User } from '../../types';
+import React, { useEffect, useState } from 'react';
+import { Mail, Shield, Calendar, Trash2, AlertTriangle, X } from 'lucide-react';
+import { apiRequest } from '../../src/services/api';
 
 const UsersPage: React.FC = () => {
-  const [users, setUsers] = useState<User[]>(mockUsers);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [users, setUsers] = useState<any[]>([]);
+  const [userToDelete, setUserToDelete] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const openDeleteModal = (user: User) => {
-    setUserToDelete(user);
-    setIsDeleteModalOpen(true);
-  };
+  /* ================= FETCH USERS ================= */
+ useEffect(() => {
+  const fetchUsers = async () => {
+    try {
+      const res = await apiRequest('/users', 'GET');
+      console.log('USERS RESPONSE:', res);
 
-  const confirmDelete = () => {
-    if (userToDelete) {
-      setUsers(users.filter(u => u.id !== userToDelete.id));
-      setIsDeleteModalOpen(false);
-      setUserToDelete(null);
+      setUsers(Array.isArray(res) ? res : []);
+    } catch (err) {
+      alert('Failed to load users');
+    } finally {
+      setLoading(false);
     }
   };
 
+  fetchUsers();
+}, []);
+
+  /* ================= DELETE USER ================= */
+  const deleteUser = async () => {
+    try {
+      await apiRequest(`/users/${userToDelete._id}`, 'DELETE');
+      setUsers(prev => prev.filter(u => u._id !== userToDelete._id));
+      setUserToDelete(null);
+    } catch {
+      alert('Delete failed');
+    }
+  };
+
+  if (loading) return <p className="text-center">Loading users...</p>;
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <p className="text-gray-500 font-medium">Managing {users.length} team members</p>
-        <button className="flex items-center space-x-2 bg-gray-900 text-white px-5 py-2.5 rounded-xl hover:bg-gray-800 font-bold transition-all">
-          <UserPlus size={18} />
-          <span>Invite Member</span>
-        </button>
-      </div>
-
-      <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-sm">
-        <table className="w-full text-left">
-          <thead className="bg-gray-50 border-b border-gray-200">
+      <div className="bg-white rounded-3xl border overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50 text-gray-500 uppercase">
             <tr>
-              <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Name</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Contact</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Role</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Joined Date</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Actions</th>
+              <th className="px-6 py-4 text-left">Name</th>
+              <th className="px-6 py-4 text-left">Email</th>
+              <th className="px-6 py-4 text-left">Role</th>
+              <th className="px-6 py-4 text-left">Joined</th>
+              <th className="px-6 py-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
-            {users.map((user) => (
-              <tr key={user.id} className="hover:bg-gray-50">
-                <td className="px-6 py-5">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold">
-                      {user.name.charAt(0)}
-                    </div>
-                    <p className="font-bold text-gray-900">{user.name}</p>
+
+          <tbody>
+            {users.map(u => (
+              <tr key={u._id} className="border-t hover:bg-gray-50">
+                {/* NAME */}
+                <td className="px-6 py-5 font-bold text-gray-900">
+                  {u.name}
+                </td>
+
+                {/* EMAIL */}
+                <td className="px-6 py-5 text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <Mail size={14} className="text-gray-400" />
+                    {u.email}
                   </div>
                 </td>
+
+                {/* ROLE */}
                 <td className="px-6 py-5">
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Mail size={14} className="mr-2 text-gray-400" />
-                    {user.email}
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-bold ${
+                      u.role === 'Admin'
+                        ? 'bg-red-100 text-red-600'
+                        : 'bg-blue-100 text-blue-600'
+                    }`}
+                  >
+                    <Shield size={12} className="inline mr-1" />
+                    {u.role}
+                  </span>
+                </td>
+
+                {/* JOINED */}
+                <td className="px-6 py-5 text-gray-500">
+                  <div className="flex items-center gap-2">
+                    <Calendar size={14} />
+                    {new Date(u.createdAt).toLocaleDateString()}
                   </div>
                 </td>
-                <td className="px-6 py-5">
-                  <div className="flex items-center">
-                    <Shield size={14} className={`mr-2 ${user.role === 'Admin' ? 'text-red-500' : 'text-blue-500'}`} />
-                    <span className="text-sm font-semibold text-gray-700">{user.role}</span>
-                  </div>
-                </td>
-                <td className="px-6 py-5">
-                  <div className="flex items-center text-sm text-gray-500">
-                    <Calendar size={14} className="mr-2" />
-                    {user.joinDate}
-                  </div>
-                </td>
+
+                {/* ACTION */}
                 <td className="px-6 py-5 text-right">
-                  <div className="flex items-center justify-end space-x-4">
-                    <button className="text-sm font-bold text-orange-600 hover:text-orange-700">Manage Access</button>
-                    <button 
-                      onClick={() => openDeleteModal(user)}
-                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => setUserToDelete(u)}
+                    className="p-2 rounded-lg hover:bg-red-50"
+                  >
+                    <Trash2 className="text-red-600" size={18} />
+                  </button>
                 </td>
               </tr>
             ))}
@@ -89,39 +105,39 @@ const UsersPage: React.FC = () => {
         </table>
       </div>
 
-      {/* Delete Confirmation Modal */}
-      {isDeleteModalOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+      {/* DELETE MODAL */}
+      {userToDelete && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-3xl max-w-md w-full">
             <div className="flex justify-between items-start mb-6">
               <div className="bg-red-50 p-3 rounded-2xl">
                 <AlertTriangle className="text-red-600" size={24} />
               </div>
-              <button 
-                onClick={() => setIsDeleteModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <X size={24} />
+              <button onClick={() => setUserToDelete(null)}>
+                <X />
               </button>
             </div>
-            
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Remove Team Member?</h3>
+
+            <h3 className="text-xl font-bold mb-2">
+              Delete user?
+            </h3>
             <p className="text-gray-600 mb-8">
-              Are you sure you want to remove <span className="font-bold">"{userToDelete?.name}"</span>? They will lose all administrative access to relax-tours immediately.
+              Are you sure you want to remove{' '}
+              <span className="font-bold">{userToDelete.name}</span>?
             </p>
-            
-            <div className="flex space-x-3">
-              <button 
-                onClick={() => setIsDeleteModalOpen(false)}
-                className="flex-1 px-6 py-3 border border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+
+            <div className="flex gap-4">
+              <button
+                onClick={() => setUserToDelete(null)}
+                className="flex-1 border py-3 rounded-xl"
               >
                 Cancel
               </button>
-              <button 
-                onClick={confirmDelete}
-                className="flex-1 px-6 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-600/20"
+              <button
+                onClick={deleteUser}
+                className="flex-1 bg-red-600 text-white py-3 rounded-xl"
               >
-                Remove User
+                Delete
               </button>
             </div>
           </div>

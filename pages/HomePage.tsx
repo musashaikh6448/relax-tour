@@ -1,18 +1,37 @@
 
-import React from 'react';
-import { tours } from '../data/mockData';
+import React, { useEffect, useState } from 'react';
 import TourCard from '../components/TourCard';
 import { Search, ChevronRight } from 'lucide-react';
+import { apiRequest } from '../src/services/api';
 
 const HomePage: React.FC = () => {
+  const [tours, setTours] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTours = async () => {
+      try {
+        const res = await apiRequest('/tours', 'GET');
+        if (res.success) {
+          setTours(res.data);
+        }
+      } catch (error) {
+        console.error('Error fetching tours:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTours();
+  }, []);
+
   return (
     <div>
       {/* Hero Section */}
       <section className="relative h-[85vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
-          <img 
-            src="https://images.unsplash.com/photo-1548013146-72479768bbfd?auto=format&fit=crop&q=80&w=2000" 
-            alt="Hero Background" 
+          <img
+            src="https://images.unsplash.com/photo-1548013146-72479768bbfd?auto=format&fit=crop&q=80&w=2000"
+            alt="Hero Background"
             className="w-full h-full object-cover scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-gray-900/70 via-gray-900/40 to-transparent"></div>
@@ -26,14 +45,14 @@ const HomePage: React.FC = () => {
             <p className="text-lg md:text-xl text-gray-200 mb-10 leading-relaxed font-light">
               Experience hand-crafted tours that blend luxury, culture, and adventure. From the peaks of Kashmir to the beaches of Bali.
             </p>
-            
+
             <div className="bg-white/10 backdrop-blur-xl p-2 rounded-2xl border border-white/20 shadow-2xl max-w-xl">
               <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
                 <div className="flex-grow bg-white rounded-xl flex items-center px-4 py-3">
                   <Search className="text-gray-400 mr-3" size={20} />
-                  <input 
-                    type="text" 
-                    placeholder="Where do you want to go?" 
+                  <input
+                    type="text"
+                    placeholder="Where do you want to go?"
                     className="w-full text-gray-800 bg-transparent focus:outline-none placeholder-gray-400"
                   />
                 </div>
@@ -60,9 +79,15 @@ const HomePage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {tours.map(tour => (
-              <TourCard key={tour.id} tour={tour} />
-            ))}
+            {loading ? (
+              <p className="col-span-full text-center py-10">Loading tours...</p>
+            ) : tours.length > 0 ? (
+              tours.map((tour) => (
+                <TourCard key={tour._id} tour={tour} />
+              ))
+            ) : (
+              <p className="col-span-full text-center py-10">No tours available at the moment.</p>
+            )}
           </div>
         </div>
       </section>
@@ -72,23 +97,23 @@ const HomePage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="grid grid-cols-2 gap-4">
-              <img 
-                src="https://images.unsplash.com/photo-1506461883276-594a12b11cf3?auto=format&fit=crop&q=80&w=600" 
+              <img
+                src="https://images.unsplash.com/photo-1506461883276-594a12b11cf3?auto=format&fit=crop&q=80&w=600"
                 className="rounded-3xl h-64 w-full object-cover shadow-lg"
                 alt="Feature 1"
               />
-              <img 
-                src="https://images.unsplash.com/photo-1590393533630-06a667793c47?auto=format&fit=crop&q=80&w=600" 
+              <img
+                src="https://images.unsplash.com/photo-1590393533630-06a667793c47?auto=format&fit=crop&q=80&w=600"
                 className="rounded-3xl h-64 w-full object-cover shadow-lg mt-8"
                 alt="Feature 2"
               />
-              <img 
-                src="https://images.unsplash.com/photo-1524492717547-2249978a68a9?auto=format&fit=crop&q=80&w=600" 
+              <img
+                src="https://images.unsplash.com/photo-1524492717547-2249978a68a9?auto=format&fit=crop&q=80&w=600"
                 className="rounded-3xl h-64 w-full object-cover shadow-lg -mt-8"
                 alt="Feature 3"
               />
-              <img 
-                src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&q=80&w=600" 
+              <img
+                src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&q=80&w=600"
                 className="rounded-3xl h-64 w-full object-cover shadow-lg"
                 alt="Feature 4"
               />

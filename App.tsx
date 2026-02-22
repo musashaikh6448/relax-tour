@@ -11,7 +11,6 @@ import HomePage from './pages/HomePage';
 import TourDetailsPage from './pages/TourDetailsPage';
 
 import AdminLoginPage from './pages/AdminLoginPage';
-
 // Admin Pages
 import DashboardOverview from './pages/admin/DashboardOverview';
 import TourManagement from './pages/admin/TourManagement';
@@ -23,6 +22,8 @@ import InternationalToursPage from './pages/InternationalToursPage';
 import PopularDestinationsPage from './pages/PopularDestinationsPage';
 import AllDestinationsPage from './pages/AllDestinationsPage';
 import AboutUsPage from './pages/AboutUsPage';
+import ProfilePage from './pages/ProfilePage';
+import AdminRegisterPage from './pages/AdminRegisterPage';
 
 const App: React.FC = () => {
   return (
@@ -38,6 +39,7 @@ const App: React.FC = () => {
           <Route path="international" element={<InternationalToursPage />} />
           <Route path="popular-destinations" element={<PopularDestinationsPage />} />
           <Route path="about" element={<AboutUsPage />} />
+           <Route path="profile" element={<ProfilePage />} />
         </Route>
 
         {/* Admin Login */}
@@ -51,11 +53,12 @@ const App: React.FC = () => {
           <Route path="quotations" element={<QuotationList />} />
           <Route path="quotations/new" element={<CreateQuotation />} />
           <Route path="users" element={<UsersPage />} />
-
+  
         </Route>
 
         {/* 404 Redirect to Home */}
         <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/admin/register" element={<AdminRegisterPage />} />
       </Routes>
     </Router>
   );

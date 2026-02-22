@@ -1,42 +1,42 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plane, Lock, Mail, Eye, EyeOff } from 'lucide-react';
+import { Plane, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { apiRequest } from '../src/services/api';
 
-const AdminLoginPage: React.FC = () => {
+const AdminRegisterPage: React.FC = () => {
   const navigate = useNavigate();
 
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+ const handleRegister = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      const response = await apiRequest('/auth/login', 'POST', {
-        email,
-        password
-      });
+    const response = await apiRequest('/auth/register', 'POST', {
+      name,
+      email,
+      password,
+      role: 'customer',
+    });
 
-     // response already = backend ka json
-localStorage.setItem('token', response.token);
-localStorage.setItem('user', JSON.stringify(response.user));
+    // ✅ AUTO LOGIN
+    localStorage.setItem('token', response.token);
+    localStorage.setItem('user', JSON.stringify(response.user));
 
-if (response.user.role === 'admin') {
-  navigate('/admin/dashboard');
-} else {
-  navigate('/');
-}
-    } catch (err: any) {
-      alert(err.message || 'Invalid credentials');
-    } finally {
-      setLoading(false);
-    }
-  };
+    // ✅ DIRECT WEBSITE OPEN
+    navigate('/');
+  } catch (err: any) {
+    alert(err.message || 'Registration failed');
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -48,16 +48,36 @@ if (response.user.role === 'admin') {
         </div>
 
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Admin Portal Login
+          Create Account
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Secure access for relax-tours staff members only.
+          Register to start your journey with Relax Tours
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-10 px-6 shadow-2xl rounded-3xl sm:px-10 border">
-          <form className="space-y-6" onSubmit={handleLogin}>
+        <div className="bg-white py-10 px-6 shadow-2xl rounded-3xl sm:px-10 border border-gray-100">
+          <form className="space-y-6" onSubmit={handleRegister}>
+            {/* NAME */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700">
+                Name
+              </label>
+              <div className="mt-1 relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <User className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="block w-full pl-10 px-3 py-3 border rounded-xl"
+                  placeholder="Your Name"
+                />
+              </div>
+            </div>
+
             {/* EMAIL */}
             <div>
               <label className="block text-sm font-semibold text-gray-700">
@@ -73,7 +93,7 @@ if (response.user.role === 'admin') {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="block w-full pl-10 px-3 py-3 border rounded-xl"
-                  placeholder="admin@relax-tours.com"
+                  placeholder="you@example.com"
                 />
               </div>
             </div>
@@ -111,18 +131,18 @@ if (response.user.role === 'admin') {
               disabled={loading}
               className="w-full py-3 rounded-xl bg-orange-600 text-white font-bold"
             >
-              {loading ? 'Signing in...' : 'Sign in'}
+              {loading ? 'Creating account...' : 'Register'}
             </button>
           </form>
 
-          {/* REGISTER LINK */}
+          {/* LOGIN LINK */}
           <p className="mt-6 text-center text-sm">
-            New Admin?{' '}
+            Already have an account?{' '}
             <span
               className="text-orange-600 cursor-pointer font-semibold"
-              onClick={() => navigate('/admin/register')}
+              onClick={() => navigate('/admin/login')}
             >
-              Register here
+              Login here
             </span>
           </p>
         </div>
@@ -131,4 +151,4 @@ if (response.user.role === 'admin') {
   );
 };
 
-export default AdminLoginPage;
+export default AdminRegisterPage;
