@@ -21,5 +21,5 @@ export const updateQuotation = async (req, res) => {
 
 export const deleteQuotation = async (req, res) => {
   await Quotation.findByIdAndDelete(req.params.id);
-  res.json({ message: 'Quotation deleted' });
+  res.json({ message: 'Deleted' });
 };

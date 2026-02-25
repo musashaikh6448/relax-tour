@@ -15,7 +15,7 @@ router.post('/', createQuotation);
 router.put('/:id', updateQuotation);
 router.delete('/:id', deleteQuotation);
 
-// ✅ PDF ROUTE
+/* 🔥 PDF ROUTE */
 router.get('/:id/pdf', generateQuotationPdfController);
 
 export default router;

@@ -17,10 +17,6 @@ export const apiRequest = async (
   });
 
   const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(data.message || 'API Error');
-  }
-
+  if (!res.ok) throw new Error(data.message || 'API Error');
   return data;
 };

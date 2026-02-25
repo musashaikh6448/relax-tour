@@ -13,6 +13,7 @@ const quotationSchema = new mongoose.Schema(
       enum: ['Pending', 'Processed'],
       default: 'Pending',
     },
+    pdfUrl: { type: String },
   },
   { timestamps: true }
 );
