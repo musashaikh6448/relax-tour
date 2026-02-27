@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   Clock,
   CheckCircle,
@@ -14,6 +14,9 @@ const QuotationList: React.FC = () => {
   const [quotations, setQuotations] = useState<any[]>([]);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
+  // outside click ke liye
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
   /* ================= FETCH ================= */
   const fetchQuotations = async () => {
     const data = await apiRequest('/quotations', 'GET');
@@ -22,6 +25,23 @@ const QuotationList: React.FC = () => {
 
   useEffect(() => {
     fetchQuotations();
+  }, []);
+
+  /* ===== outside click -> menu close ===== */
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target as Node)
+      ) {
+        setOpenMenuId(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   /* ================= ACTIONS ================= */
@@ -38,33 +58,47 @@ const QuotationList: React.FC = () => {
     fetchQuotations();
   };
 
+  // ✅ PDF generate + state me pdfUrl save
   const generatePdf = async (id: string) => {
-  const res = await apiRequest(`/quotations/${id}/pdf`, 'GET');
+    const res = await apiRequest(`/quotations/${id}/pdf`, 'GET');
 
-  // 🔥 IMPORTANT FIX
-  const BACKEND_URL = 'http://localhost:5000';
+    const BACKEND_URL = 'http://localhost:5000';
 
-  window.open(`${BACKEND_URL}${res.pdfUrl}`, '_blank');
-};
+    // pdfUrl local state me store
+    setQuotations((prev) =>
+      prev.map((q) =>
+        q._id === id ? { ...q, pdfUrl: res.pdfUrl } : q
+      )
+    );
 
- const shareOnWhatsapp = (pdfUrl?: string) => {
+    window.open(`${BACKEND_URL}${res.pdfUrl}`, '_blank');
+  };
+
+  const shareOnWhatsapp = (pdfUrl?: string) => {
   if (!pdfUrl) {
     alert('Please generate PDF first');
     return;
   }
 
   const BACKEND_URL = 'http://localhost:5000';
+  const phoneNumber = '91XXXXXXXXXX'; // customer number
 
-  const message = `Hello, please find your tour quotation:\n${BACKEND_URL}${pdfUrl}`;
+  const message = `Hello 👋
+Please find your tour quotation PDF below:
+${BACKEND_URL}${pdfUrl}
 
-  window.open(
-    `https://wa.me/91XXXXXXXXXX?text=${encodeURIComponent(message)}`,
-    '_blank'
-  );
+(Click the link to view/download the PDF)`;
+
+  const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
+    message
+  )}`;
+
+  // ✅ ye hi max reliable method hai
+  window.location.href = whatsappUrl;
 };
 
   return (
-    <div className="bg-white rounded-3xl border overflow-hidden">
+    <div className="bg-white rounded-3xl border overflow-visible">
       <table className="w-full text-sm">
         <thead className="bg-gray-50 text-gray-500 uppercase">
           <tr>
@@ -79,23 +113,19 @@ const QuotationList: React.FC = () => {
         <tbody>
           {quotations.map((q) => (
             <tr key={q._id} className="border-t hover:bg-gray-50">
-              {/* ID */}
               <td className="px-6 py-4 font-mono">
                 #{q._id.slice(-5)}
               </td>
 
-              {/* CUSTOMER */}
               <td className="px-6 py-4">
                 <p className="font-bold">{q.customerName}</p>
                 <p className="text-xs text-gray-500">{q.travelDate}</p>
               </td>
 
-              {/* DESTINATION */}
               <td className="px-6 py-4 font-medium">
                 {q.destination}
               </td>
 
-              {/* STATUS */}
               <td className="px-6 py-4">
                 <span
                   className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${
@@ -113,7 +143,6 @@ const QuotationList: React.FC = () => {
                 </span>
               </td>
 
-              {/* ACTIONS */}
               <td className="px-6 py-4 text-right relative">
                 <button
                   onClick={() =>
@@ -124,11 +153,11 @@ const QuotationList: React.FC = () => {
                   <MoreVertical />
                 </button>
 
-                {/* ========= MENU STARTS HERE ========= */}
                 {openMenuId === q._id && (
-                  <div className="absolute right-4 top-12 bg-white border rounded-xl shadow-xl w-56 z-50">
-                    
-                    {/* VIEW */}
+                  <div
+                    ref={menuRef}
+                    className="absolute right-4 top-12 bg-white border rounded-xl shadow-xl w-56 z-50"
+                  >
                     <button
                       className="flex items-center gap-2 w-full px-4 py-2 hover:bg-gray-50 text-left"
                       onClick={() =>
@@ -144,7 +173,6 @@ Notes: ${q.notes || '-'}`
                       <Eye size={16} /> View Details
                     </button>
 
-                    {/* GENERATE PDF */}
                     <button
                       className="flex items-center gap-2 w-full px-4 py-2 hover:bg-gray-50 text-left"
                       onClick={() => generatePdf(q._id)}
@@ -152,7 +180,6 @@ Notes: ${q.notes || '-'}`
                       <FileText size={16} /> Generate PDF
                     </button>
 
-                    {/* SHARE WHATSAPP */}
                     <button
                       className="flex items-center gap-2 w-full px-4 py-2 hover:bg-gray-50 text-left"
                       onClick={() => shareOnWhatsapp(q.pdfUrl)}
@@ -160,7 +187,6 @@ Notes: ${q.notes || '-'}`
                       <Send size={16} /> Share on WhatsApp
                     </button>
 
-                    {/* MARK PROCESSED */}
                     {q.status === 'Pending' && (
                       <button
                         className="flex items-center gap-2 w-full px-4 py-2 hover:bg-gray-50 text-left"
@@ -170,7 +196,6 @@ Notes: ${q.notes || '-'}`
                       </button>
                     )}
 
-                    {/* DELETE */}
                     <button
                       className="flex items-center gap-2 w-full px-4 py-2 text-red-600 hover:bg-red-50 text-left"
                       onClick={() => deleteQuotation(q._id)}
@@ -179,7 +204,6 @@ Notes: ${q.notes || '-'}`
                     </button>
                   </div>
                 )}
-                {/* ========= MENU ENDS HERE ========= */}
               </td>
             </tr>
           ))}

@@ -8,21 +8,28 @@ const DomesticToursPage: React.FC = () => {
 
   useEffect(() => {
     const fetchTours = async () => {
-      const res = await apiRequest('/tours', 'GET');
-      setTours(res.data || []);
+      const data = await apiRequest('/tours', 'GET');
+
+      // ✅ apiRequest direct array deta hai
+      setTours(Array.isArray(data) ? data : []);
     };
+
     fetchTours();
   }, []);
 
+  // ✅ CASE-INSENSITIVE FILTER (REAL FIX)
   const domesticTours = tours.filter(
-    (tour) => tour.category === 'Domestic'
+    (tour) =>
+      typeof tour.category === 'string' &&
+      tour.category.toLowerCase() === 'domestic'
   );
 
   return (
     <div>
+      {/* HERO */}
       <section className="relative h-[55vh] flex items-center justify-center">
         <img
-          src="https://images.unsplash.com/photo-1524492717547-2249978a68a9"
+          src="https://indiator.com/tourist-places/wp-content/uploads/2019/01/When-Where-to-Go-in-India-2019.png"
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-black/60"></div>
@@ -33,6 +40,7 @@ const DomesticToursPage: React.FC = () => {
         </div>
       </section>
 
+      {/* TOURS */}
       <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-between mb-12">
@@ -42,11 +50,17 @@ const DomesticToursPage: React.FC = () => {
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {domesticTours.map((tour) => (
-              <TourCard key={tour._id} tour={tour} />
-            ))}
-          </div>
+          {domesticTours.length === 0 ? (
+            <p className="text-center text-gray-500">
+              No domestic tours available
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {domesticTours.map((tour) => (
+                <TourCard key={tour._id} tour={tour} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </div>

@@ -8,21 +8,28 @@ const InternationalToursPage: React.FC = () => {
 
   useEffect(() => {
     const fetchTours = async () => {
-      const res = await apiRequest('/tours', 'GET');
-      setTours(res.data || []);
+      const data = await apiRequest('/tours', 'GET');
+
+      // ✅ apiRequest direct array deta hai
+      setTours(Array.isArray(data) ? data : []);
     };
+
     fetchTours();
   }, []);
 
+  // ✅ CASE-INSENSITIVE FILTER (MAIN FIX)
   const internationalTours = tours.filter(
-    (tour) => tour.category === 'International'
+    (tour) =>
+      typeof tour.category === 'string' &&
+      tour.category.toLowerCase() === 'international'
   );
 
   return (
     <div>
+      {/* HERO SECTION */}
       <section className="relative h-[55vh] flex items-center justify-center">
         <img
-          src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34"
+          src="https://res.klook.com/image/upload/q_85/c_fill,w_750/v1736261062/x1kfeehglxunp0ybahas.jpg"
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-black/60"></div>
@@ -33,6 +40,7 @@ const InternationalToursPage: React.FC = () => {
         </div>
       </section>
 
+      {/* TOURS SECTION */}
       <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-between mb-12">
@@ -42,11 +50,17 @@ const InternationalToursPage: React.FC = () => {
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {internationalTours.map((tour) => (
-              <TourCard key={tour._id} tour={tour} />
-            ))}
-          </div>
+          {internationalTours.length === 0 ? (
+            <p className="text-center text-gray-500">
+              No international tours available
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {internationalTours.map((tour) => (
+                <TourCard key={tour._id} tour={tour} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </div>
