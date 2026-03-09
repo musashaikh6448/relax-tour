@@ -18,11 +18,13 @@ app.use(helmet());
 app.use(morgan('dev'));
 
 app.use('/api/v1', routes);
-app.use(errorHandler);
 app.use('/api/v1/tours', tourRoutes);
 app.use('/api/v1/quotations', quotationRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
 app.use('/api/v1/users', userRoutes);
+
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+
+app.use(errorHandler);
 
 export default app;
